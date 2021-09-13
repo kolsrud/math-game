@@ -37,5 +37,18 @@ namespace MathGame
         {
             _tc.SetResult(true);
         }
+
+        public static async Task<bool> ShowWindow(ViewModel viewModel)
+        {
+            var t = new TaskCompletionSource<bool>();
+            var currentWindow = new ResultDialog(viewModel, t);
+            currentWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            currentWindow.Owner = Application.Current.MainWindow;
+            currentWindow.Show();
+            currentWindow.Focus();
+            var b = await t.Task;
+            currentWindow.Close();
+            return b;
+        }
     }
 }

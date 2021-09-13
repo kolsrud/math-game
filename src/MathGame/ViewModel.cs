@@ -23,6 +23,7 @@ namespace MathGame
 
     public class ViewModel
     {
+        public ObservableValue<string> Player { get; } = new ObservableValue<string>();
         public ObservableValue<string> Problem { get; } = new ObservableValue<string>();
         public ObservableValue<string> Solution { get; } = new ObservableValue<string>();
         public ObservableValue<int> ProblemCnt { get; } = new ObservableValue<int>();
@@ -45,6 +46,11 @@ namespace MathGame
         private Random _gen = new Random();
 
         public ViewModel()
+        {
+            RunGame();
+        }
+
+        private void RunGame()
         {
             NewGame();
             _timer.AutoReset = true;
@@ -141,26 +147,13 @@ namespace MathGame
             if (ProblemCnt.Value == 100)
             {
                 _sw.Stop();
-                if (!await ShowWindow())
+                if (!await ResultDialog.ShowWindow(this))
                     Environment.Exit(0);
 
                 NewGame();
             }
 
             NewProblem();
-        }
-
-        private async Task<bool> ShowWindow()
-        {
-            var t = new TaskCompletionSource<bool>();
-            var currentWindow = new ResultDialog(this, t);
-            currentWindow.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            currentWindow.Owner = Application.Current.MainWindow;
-            currentWindow.Show();
-            currentWindow.Focus();
-            var b = await t.Task;
-            currentWindow.Close();
-            return b;
         }
     }
 }
