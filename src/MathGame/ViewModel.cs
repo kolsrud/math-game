@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -12,7 +14,7 @@ namespace MathGame
     public class Player
     {
         public string Name { get; set; }
-        public TimeSpan BestTime { get; set; }
+        public long BestTime { get; set; }
     }
 
     public class ProblemResult
@@ -24,6 +26,7 @@ namespace MathGame
     public class ViewModel
     {
         public ObservableValue<string> Player { get; } = new ObservableValue<string>();
+        public ObservableValue<string> RecordString { get; } = new ObservableValue<string>();
         public ObservableValue<string> Problem { get; } = new ObservableValue<string>();
         public ObservableValue<string> Solution { get; } = new ObservableValue<string>();
         public ObservableValue<int> ProblemCnt { get; } = new ObservableValue<int>();
@@ -147,6 +150,7 @@ namespace MathGame
             if (ProblemCnt.Value == 100)
             {
                 _sw.Stop();
+                CheckRecord();
                 if (!await ResultDialog.ShowWindow(this))
                     Environment.Exit(0);
 
@@ -154,6 +158,43 @@ namespace MathGame
             }
 
             NewProblem();
+        }
+
+        private const string SaveFileName = "MathGameResults.json";
+        
+        private void CheckRecord()
+        {
+            if (!File.Exists(SaveFileName))
+                File.WriteAllText(SaveFileName, "[]");
+
+            var recordsTxt = File.ReadAllText(SaveFileName);
+            var playerRecords = JsonSerializer.Deserialize<Player[]>(recordsTxt);
+            var oldBest = playerRecords.FirstOrDefault(p => p.Name == Player.Value);
+
+            var newTime = ComputeTime();
+            if (oldBest == null)
+            {
+                playerRecords = playerRecords.Append(new Player { Name = Player.Value, BestTime = newTime.Ticks }).ToArray();
+                RecordString.Value = $"Det är första gång du spelar. Du fick tiden {FormatTime(newTime)}. Bra jobbat!";
+            }
+            else if (oldBest.BestTime > newTime.Ticks)
+            {
+                var t = TimeSpan.FromTicks(oldBest.BestTime);
+                RecordString.Value = $"NYTT REKORD! Ditt förra rekord var {FormatTime(t)} och nu fick du {FormatTime(newTime)}. Det är {FormatTime(t - newTime)} snabbare!";
+                oldBest.BestTime = newTime.Ticks;
+            }
+            else
+            {
+                var t = TimeSpan.FromTicks(oldBest.BestTime);
+                RecordString.Value = $"Inget nytt rekord denna gång. Du var {FormatTime(newTime - t)} långsammare än ditt rekord på {FormatTime(t)}.";
+            }
+
+            File.WriteAllText(SaveFileName, JsonSerializer.Serialize(playerRecords));
+        }
+
+        private static string FormatTime(TimeSpan t)
+        {
+            return ((int) Math.Floor(t.TotalMinutes)) + ":" + t.ToString(@"ss\.f");
         }
     }
 }

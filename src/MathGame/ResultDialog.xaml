@@ -11,6 +11,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -20,8 +21,9 @@
             <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="24" Text="{Binding Path=Player.Value}" />
         </DockPanel>
         <TextBlock Grid.Row="2" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="24" Text="{Binding Path=ResultSummary}" />
-        <TextBlock Grid.Row="3" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="24" Text="{Binding Path=DetailedResult}" />
-        <WrapPanel Grid.Row="4" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,10,0,0">
+        <TextBlock Grid.Row="3" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="24" Text="{Binding Path=RecordString.Value}" />
+        <TextBlock Grid.Row="4" DockPanel.Dock="Left" VerticalAlignment="Center" FontSize="24" Text="{Binding Path=DetailedResult}" />
+        <WrapPanel Grid.Row="5" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,10,0,0">
             <Button HorizontalAlignment="Right" FontSize="24" Margin="0,0,10,0" Click="ButtonExit_OnClick">Avsluta</Button>
             <Button HorizontalAlignment="Right" FontSize="24" Click="ButtonPlayAgain_OnClick">Spela igen</Button>
         </WrapPanel>
