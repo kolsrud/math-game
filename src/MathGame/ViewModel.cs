@@ -26,6 +26,7 @@ namespace MathGame
     public class ViewModel
     {
         public ObservableValue<string> Player { get; } = new ObservableValue<string>();
+        public ObservableCollection<string> KnownPlayers { get; } = new ObservableCollection<string>();
         public ObservableValue<string> RecordString { get; } = new ObservableValue<string>();
         public ObservableValue<string> Problem { get; } = new ObservableValue<string>();
         public ObservableValue<string> Solution { get; } = new ObservableValue<string>();
@@ -50,6 +51,7 @@ namespace MathGame
 
         public ViewModel()
         {
+            GetKnownPlayers().ToList().ForEach(KnownPlayers.Add);
             RunGame();
         }
 
@@ -161,13 +163,25 @@ namespace MathGame
         }
 
         private const string SaveFileName = "MathGameResults.json";
-        
-        private void CheckRecord()
+
+        private string GetSaveFileContents()
         {
             if (!File.Exists(SaveFileName))
                 File.WriteAllText(SaveFileName, "[]");
 
-            var recordsTxt = File.ReadAllText(SaveFileName);
+            return File.ReadAllText(SaveFileName);
+        }
+
+        private IEnumerable<string> GetKnownPlayers()
+        {
+            var recordsTxt = GetSaveFileContents();
+            var playerRecords = JsonSerializer.Deserialize<Player[]>(recordsTxt);
+            return playerRecords.Select(p => p.Name);
+        }
+
+        private void CheckRecord()
+        {
+            var recordsTxt = GetSaveFileContents();
             var playerRecords = JsonSerializer.Deserialize<Player[]>(recordsTxt);
             var oldBest = playerRecords.FirstOrDefault(p => p.Name == Player.Value);
 
