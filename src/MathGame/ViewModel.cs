@@ -38,8 +38,11 @@ namespace MathGame
         public ObservableValue<string> Time { get; } = new ObservableValue<string>();
 
         private Dictionary<int, int> _failCounts = new Dictionary<int, int>();
+        private Dictionary<int, int> _numberCount = new Dictionary<int, int>();
+        private Dictionary<int, TimeSpan> _timePerNumber = new Dictionary<int, TimeSpan>();
 
         private readonly Stopwatch _sw = new Stopwatch();
+        private readonly Stopwatch _currentSw = new Stopwatch();
         private readonly Timer _timer = new Timer(100);
 
         public ObservableCollection<ProblemResult> ProblemHistory1 { get; } = new ObservableCollection<ProblemResult>();
@@ -91,6 +94,8 @@ namespace MathGame
             foreach (var i in Enumerable.Range(0, 11))
             {
                 _failCounts[i] = 0;
+                _numberCount[i] = 0;
+                _timePerNumber[i] = TimeSpan.Zero;
             }
         }
 
@@ -114,8 +119,11 @@ namespace MathGame
 
         private string GetDetailedResult(KeyValuePair<int, int> kv)
         {
-            return $"{kv.Key}: {kv.Value} fel";
-        }
+            var n = _numberCount[kv.Key];
+            var t = _timePerNumber[kv.Key];
+            var tPerN = TimeSpan.FromTicks(t.Ticks / n);
+            return $"{kv.Key}: {kv.Value} fel (antal problem: {n}, tid spenderad: {FormatTime(t)}, tid per problem: {FormatTime(tPerN)})";
+        } 
 
         public async void CheckAnswer()
         {
@@ -125,6 +133,15 @@ namespace MathGame
             _sw.Start();
             ProblemCnt.Value += 1;
             var problemResult = new ProblemResult();
+            _currentSw.Stop();
+            _numberCount[_x]++;
+            _timePerNumber[_x] += _currentSw.Elapsed;
+            if (_y != _x)
+            {
+                _numberCount[_y]++;
+                _timePerNumber[_y] += _currentSw.Elapsed;
+            }
+
             problemResult.Problem = Problem.Value;
             if (int.Parse(Solution.Value) == _x * _y)
             {
@@ -159,6 +176,7 @@ namespace MathGame
                 NewGame();
             }
 
+            _currentSw.Restart();
             NewProblem();
         }
 
